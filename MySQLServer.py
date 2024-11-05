@@ -1,30 +1,46 @@
 import mysql.connector
-from mysql.connector import Error
 
-def create_database():
+def create_database(host, user, password, database_name):
+  """
+  Attempts to create a database with the given name.
+
+  Args:
+      host (str): The hostname of the MySQL server.
+      user (str): The username to connect to the server.
+      password (str): The password for the user.
+      database_name (str): The name of the database to create.
+
+  Returns:
+      None
+  """
+
+  try:
+    connection = mysql.connector.connect(
+        host=host,
+        user=user,
+        password=password
+    )
+    cursor = connection.cursor()
+
+    # Create database (ignore errors if it already exists)
     try:
-        # Connect to the MySQL server
-        connection = mysql.connector.connect(
-            host='localhost',          # Replace with your host, e.g., 'localhost'
-            user='your_username',      # Replace with your MySQL username
-            password='your_password'   # Replace with your MySQL password
-        )
+      cursor.execute(f"CREATE DATABASE {database_name}")
+      print(f"Database '{database_name}' created successfully!")
+    except mysql.connector.Error as err:
+      # Likely a "Database exists" error, so we can ignore it
+      pass
 
-        if connection.is_connected():
-            cursor = connection.cursor()
-            # Attempt to create the database
-            cursor.execute("CREATE DATABASE IF NOT EXISTS alx_book_store")
-            print("Database 'alx_book_store' created successfully!")
+  except mysql.connector.Error as err:
+    print(f"Error connecting to MySQL server: {err}")
+  finally:
+    if connection:
+      connection.close()
+      cursor.close()  # Close cursor even if creation failed
 
-    except Error as e:
-        print(f"Error: {e}")
+# Replace with your actual MySQL server credentials
+host = "localhost"  # Replace with your MySQL server hostname
+user = "your_username"  # Replace with your MySQL username
+password = "your_password"  # Replace with your MySQL password
+database_name = "alx_book_store"
 
-    finally:
-        # Close the cursor and connection
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-            print("MySQL connection is closed.")
-
-if __name__ == "__main__":
-    create_database()
+create_database(host, user, password, database_name)
